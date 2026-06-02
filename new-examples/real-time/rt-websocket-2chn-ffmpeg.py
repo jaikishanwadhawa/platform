@@ -1,12 +1,13 @@
 # Voicegain.ai ASR Real-Time Transcription with Websocket
 
 from ffmpy import FFmpeg
-import requests, time, os, json
+import requests, time, os, json, sys, argparse, subprocess
 import threading
 import asyncio
 import websockets
 import datetime
 import configparser
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 cfg = configparser.ConfigParser()
 cfg.read("config.ini")
@@ -20,6 +21,24 @@ outputFolder = cfg.get("DEFAULT", "OUTPUTFOLDER")
 inputFile = cfg.get("DEFAULT", "INPUTFILE")
 
 inputFilePath = f"{inputFolder}/{inputFile}"
+inputFileBase = os.path.splitext(inputFile)[0]
+os.makedirs(outputFolder, exist_ok=True)
+
+# CLI args: presence of --sensitivity switches script into single-run worker mode
+_cli = argparse.ArgumentParser()
+_cli.add_argument("--sensitivity", type=float, default=None)
+_cli.add_argument("--audio", type=str, default=None)
+_cli.add_argument("--label", type=str, default="")
+_cli.add_argument("--result-file", type=str, default=None)
+cliArgs = _cli.parse_args()
+isSingleRunWorker = cliArgs.sensitivity is not None
+
+# unique tag to keep concurrent subprocesses from clobbering each other's temp files
+runTag = cliArgs.label if cliArgs.label else "run"
+
+# per-channel transcripts collected from the websocket (after applying del/edit)
+transcriptLeft = []
+transcriptRight = []
 
 ##vgFormat = "PCMU"
 vgFormat = "L16"
@@ -145,13 +164,24 @@ def web_api_request(headers, body):
   print(f"making POST request to {url}", flush=True)
   print("with body: {}".format(json.dumps(body)), flush=True)
 
-  init_response_raw = requests.post(url, json=body, headers=headers)
+  # retry POST on 429 (rate limit) with exponential backoff
+  init_response_raw = None
+  for attempt, backoff in enumerate([5, 15, 45, 0], start=1):
+    init_response_raw = requests.post(url, json=body, headers=headers)
+    if init_response_raw.status_code != 429:
+      break
+    if backoff == 0:
+      print(f"giving up after attempt {attempt}: still 429", flush=True)
+      break
+    print(f"got 429 (attempt {attempt}); sleeping {backoff}s before retry", flush=True)
+    time.sleep(backoff)
+
   init_response = init_response_raw.json()
   if(init_response.get("sessions") is None):
     print("did not obtain session")
     print(init_response_raw.status_code)
     print(init_response_raw.text)
-    exit()
+    sys.exit(1)
 
   # retrieve values from response
   # sessionId and capturedAudio are printed for debugging purposes
@@ -203,6 +233,8 @@ def process_ws_msg(wsMsg, stack, prefix):
 
   try:
     data = json.loads(wsMsg)
+    # per-channel persistent transcript (no clearing on channel switch, no truncation)
+    transcript = transcriptRight if prefix == "R <<" else transcriptLeft
     utter = data.get('utt')
     if( utter is None ):
       toDel = data.get('del')
@@ -214,22 +246,26 @@ def process_ws_msg(wsMsg, stack, prefix):
         # delete and edits
         if(channelOfLastWordReceived != prefix):
           # new channel
-          stack.clear()        
+          stack.clear()
         for i in range(toDel):
           if(len(stack) > 0):
             stack.pop()
+          if(len(transcript) > 0):
+            transcript.pop()
         edits = data.get('edit')
         if(not (edits is None)):
           for edit in edits:
             utter = edit.get('utt')
             stack.append(utter)
+            transcript.append(utter)
           channelOfLastWordReceived = prefix
     else:
       # simple utterance
       if(channelOfLastWordReceived != prefix):
         # new channel
-        stack.clear()        
+        stack.clear()
       stack.append(utter)
+      transcript.append(utter)
       channelOfLastWordReceived = prefix
       if( len(stack) > 50 ):
         while(len(stack) > 30):
@@ -251,7 +287,7 @@ def process_ws_msg(wsMsg, stack, prefix):
 async def stream_audio(file_name, audio_ws_url):
   global epoch_start_audio_stream
   print("START stream_audio", flush=True)
-  conv_fname = (file_name+'.ulaw')
+  conv_fname = f"{file_name}.{runTag}.ulaw"
   ff = FFmpeg(
       inputs={file_name: []},
       #outputs={conv_fname : ['-ar', '8000', '-f', 'mulaw', '-y']}
@@ -383,8 +419,8 @@ async def websocket_receive(uri, stack, prefix):
 
 
 # stream audio
-def process_audio(file_name):
-  print(f"START processing: {file_name}", flush=True)
+def process_audio(file_name, experiment_label=""):
+  print(f"START processing: {file_name} [{experiment_label}]", flush=True)
   
   web_res = web_api_request(headers, body)
 
@@ -430,18 +466,164 @@ def process_audio(file_name):
     url = "{}://{}/{}/data/{}/file".format(protocol, hostPort, urlPrefix, capturedAudio)
     print(f"making GET request to {url}", flush=True)
     audio_response = requests.get(url, headers=headers)
-    with open(f"{file_name}-captured.wav", "wb") as f:
+    capture_path = f"{outputFolder}/{inputFileBase}.{runTag}-captured.wav"
+    with open(capture_path, "wb") as f:
       f.write(audio_response.content)
-    print(f"downloaded captured audio to {file_name}-captured.wav", flush=True)
+    print(f"downloaded captured audio to {capture_path}", flush=True)
 
-  print(f"END processing: {file_name}")
+  # write per-channel transcripts (after edits) to OUTPUTFOLDER
+  suffix = f".{experiment_label}" if experiment_label else ""
+  left_path = f"{outputFolder}/{inputFileBase}{suffix}.left.txt"
+  right_path = f"{outputFolder}/{inputFileBase}{suffix}.right.txt"
+  with open(left_path, "w", encoding="utf-8") as f:
+    f.write(' '.join(transcriptLeft))
+  with open(right_path, "w", encoding="utf-8") as f:
+    f.write(' '.join(transcriptRight))
+  print(f"saved left transcript ({len(transcriptLeft)} words) to {left_path}", flush=True)
+  print(f"saved right transcript ({len(transcriptRight)} words) to {right_path}", flush=True)
+
+  print(f"END processing: {file_name} [{experiment_label}]")
+  return len(transcriptLeft), len(transcriptRight)
 
 ## end of function and variable definitions
 ## main run starts here
 
 
-process_audio(inputFilePath)
+# ============================================================
+# Single-run worker mode (invoked by orchestrator as subprocess)
+# ============================================================
+if isSingleRunWorker:
+    body["settings"]["asr"]["sensitivity"] = cliArgs.sensitivity
+    wordsL, wordsR = process_audio(cliArgs.audio, experiment_label=cliArgs.label)
+    if cliArgs.result_file:
+        with open(cliArgs.result_file, "w", encoding="utf-8") as f:
+            json.dump({"wordsL": wordsL, "wordsR": wordsR}, f)
+    sys.exit(0)
 
-print("sleeping 60 seconds", flush=True )
-time.sleep(60)
-print("done sleeping", flush=True )
+# ============================================================
+# Orchestrator mode: sweep sensitivity x volume with 4-way parallelism
+# ============================================================
+
+sensitivities = [0.9, 0.7, 0.5, 0.4, 0.35, 0.3, 0.25, 0.2, 0.175, 0.15, 0.125, 0.1, 0.075, 0.05]
+volumes = [1.00, 0.50, 0.25, 0.125, 0.0625]
+MAX_CONCURRENCY = 4
+
+# Pre-create volume variants (once)
+volumePaths = {1.00: inputFilePath}
+for v in volumes:
+    if v == 1.00:
+        continue
+    p = f"{outputFolder}/{inputFileBase}-vol{v:.4f}.wav"
+    if not os.path.exists(p):
+        print(f"creating volume={v} audio: {p}", flush=True)
+        FFmpeg(
+            inputs={inputFilePath: []},
+            outputs={p: ['-filter:a', f'volume={v}', '-y']}
+        ).run()
+    else:
+        print(f"volume variant already exists: {p}", flush=True)
+    volumePaths[v] = p
+
+# Build experiment matrix
+experiments = []
+for s in sensitivities:
+    for v in volumes:
+        label = f"sens{s:.3f}.vol{v:.4f}"
+        experiments.append({
+            "sensitivity": s,
+            "volume": v,
+            "audio": volumePaths[v],
+            "label": label,
+            "result_file": f"{outputFolder}/{inputFileBase}.{label}.result.json",
+        })
+
+# skip experiments that already have a result file (only re-run gaps)
+todo = [e for e in experiments if not os.path.exists(e["result_file"])]
+already_done = len(experiments) - len(todo)
+print(f"\n=== ORCHESTRATOR: {len(experiments)} experiments total, {already_done} already done, {len(todo)} to run, concurrency={MAX_CONCURRENCY} ===\n", flush=True)
+
+# stagger between worker dispatches to reduce burst-rate-limit risk
+STAGGER_SECONDS = 3
+_dispatch_lock = threading.Lock()
+_next_dispatch_time = [time.time()]
+
+def run_one(exp):
+    # serialize dispatch start so initial POSTs don't burst
+    with _dispatch_lock:
+        wait = _next_dispatch_time[0] - time.time()
+        if wait > 0:
+            time.sleep(wait)
+        _next_dispatch_time[0] = time.time() + STAGGER_SECONDS
+
+    cmd = [
+        sys.executable, os.path.abspath(__file__),
+        "--sensitivity", str(exp["sensitivity"]),
+        "--audio", exp["audio"],
+        "--label", exp["label"],
+        "--result-file", exp["result_file"],
+    ]
+    log_path = f"{outputFolder}/{inputFileBase}.{exp['label']}.log"
+    print(f"START {exp['label']}", flush=True)
+    t0 = time.time()
+    try:
+        with open(log_path, "w", encoding="utf-8") as logf:
+            p = subprocess.run(cmd, stdout=logf, stderr=subprocess.STDOUT, text=True)
+        dt = time.time() - t0
+        if p.returncode != 0:
+            print(f"FAIL {exp['label']} (exit {p.returncode}, {dt:.1f}s) — see {log_path}", flush=True)
+            return exp, None
+        with open(exp["result_file"], "r", encoding="utf-8") as f:
+            res = json.load(f)
+        print(f"DONE {exp['label']}: L={res['wordsL']} R={res['wordsR']} ({dt:.1f}s)", flush=True)
+        return exp, res
+    except Exception as e:
+        print(f"ERROR {exp['label']}: {e}", flush=True)
+        return exp, None
+
+results = []
+# include already-done results from disk
+for e in experiments:
+    if os.path.exists(e["result_file"]):
+        try:
+            with open(e["result_file"], "r", encoding="utf-8") as f:
+                res = json.load(f)
+            results.append({
+                "sensitivity": e["sensitivity"],
+                "volume": e["volume"],
+                "wordsL": res["wordsL"],
+                "wordsR": res["wordsR"],
+            })
+        except Exception:
+            pass
+
+with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as pool:
+    futures = {pool.submit(run_one, e): e for e in todo}
+    for fut in as_completed(futures):
+        exp, res = fut.result()
+        results.append({
+            "sensitivity": exp["sensitivity"],
+            "volume": exp["volume"],
+            "wordsL": res["wordsL"] if res else None,
+            "wordsR": res["wordsR"] if res else None,
+        })
+
+# Sort results for stable presentation
+results.sort(key=lambda r: (-r["sensitivity"], -r["volume"]))
+
+# Summary table
+print("\n=== EXPERIMENT SUMMARY ===", flush=True)
+print(f"{'sensitivity':>12} {'volume':>8} {'wordsL':>8} {'wordsR':>8}", flush=True)
+for r in results:
+    wL = "FAIL" if r["wordsL"] is None else f"{r['wordsL']:d}"
+    wR = "FAIL" if r["wordsR"] is None else f"{r['wordsR']:d}"
+    print(f"{r['sensitivity']:>12.3f} {r['volume']:>8.4f} {wL:>8} {wR:>8}", flush=True)
+
+# Write CSV
+csv_path = f"{outputFolder}/{inputFileBase}.experiment-summary.csv"
+with open(csv_path, "w", encoding="utf-8") as f:
+    f.write("sensitivity,volume,wordsL,wordsR\n")
+    for r in results:
+        wL = "" if r["wordsL"] is None else r["wordsL"]
+        wR = "" if r["wordsR"] is None else r["wordsR"]
+        f.write(f"{r['sensitivity']:.3f},{r['volume']:.4f},{wL},{wR}\n")
+print(f"saved summary CSV to {csv_path}", flush=True)

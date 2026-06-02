@@ -12,3 +12,4 @@ examples/grammars/Recordings/**/User7/*
 examples/grammars/Recordings/**/User8/*
 examples/grammars/Recordings/**/User9/*
 TTS/11labs/*.wav
+new-examples/real-time/plot-experiment-heatmaps.py
