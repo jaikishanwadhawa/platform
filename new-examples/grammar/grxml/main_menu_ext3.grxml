@@ -42,8 +42,9 @@
           <item>Kaypall</item>     
           <item>Kaybill</item>     
           <item>Kaybell</item> 
+          <item>Cape Hill</item>
         </one-of>
-        <tag>out='PayBill2';</tag>
+        <tag>out='PayBill3';</tag>
       </item>
 
       <item>
