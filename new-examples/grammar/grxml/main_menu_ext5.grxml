@@ -45,8 +45,13 @@
           <item>Cape Hill</item>
           <item>Pay Pell</item>
           <item>Pay Tell</item>
+          <item>Phay Tell</item>
+          <item>Phay Till</item>          
+          <item>Kay Tell</item>
+          <item>Kay Hill</item>
+          <item>Thank God</item>
         </one-of>
-        <tag>out='PayBill4';</tag>
+        <tag>out='PayBill5';</tag>
       </item>
 
       <item>
