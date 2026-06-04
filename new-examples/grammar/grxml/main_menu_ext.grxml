@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar
+  mode="voice"
+  root="voiceInlineGrammar"
+  xml:lang="en"
+  version="1.0"
+  xmlns="http://www.w3.org/2001/06/grammar"
+>
+  <rule id="voiceInlineGrammar" scope="public">
+    <ruleref special="GARBAGE"></ruleref>
+
+    <one-of>
+      <item>
+        <one-of>
+          <item>Arrangement</item>
+          <item>Arrangements</item>
+          <item>Two</item>
+        </one-of>
+        <tag>out='PaymentArrangement';</tag>
+      </item>
+
+      <item>
+        <one-of>
+          <item>Pay Bill</item>
+          <item>Amount Due</item>
+          <item>Payment</item>
+          <item>Monthly Payment</item>
+          <item>Pay Bills</item>
+          <item>Due</item>
+          <item>Amount</item>
+          <item>Due Amount</item>
+          <item>One</item>
+          <item>Kaybell</item>
+          <item>Hey Bill</item>
+          <item>Hey Belle</item>
+          <item>Pay Hill</item>
+        </one-of>
+        <tag>out='PayBill';</tag>
+      </item>
+
+      <item>
+        <one-of>
+          <item>account maintenance</item>
+          <item>request a duplicate bill</item>
+          <item>Duplicate Bill</item>
+          <item>account</item>
+          <item>Telephone number</item>
+          <item>change Telephone number</item>
+          <item>change my phone number</item>
+          <item>maintenance</item>
+          <item>duplicate</item>
+          <item>five</item>
+        </one-of>
+        <tag>out='AccountManagement';</tag>
+      </item>
+
+      <item>
+        <one-of>
+          <item>repeat</item>
+        </one-of>
+        <tag>out='Repeat';</tag>
+      </item>
+
+      <item>
+        <one-of>
+          <item>stop service</item>
+          <item>stop services</item>
+          <item>stop</item>
+          <item>stop the service</item>
+          <item>stop service now</item>
+          <item>stop or cancel service</item>
+          <item>four</item>
+        </one-of>
+        <tag>out='StopServices';</tag>
+      </item>
+
+      <item>
+        <one-of>
+          <item>start services</item>
+          <item>start new service</item>
+          <item>building new house</item>
+          <item>start</item>
+          <item>start service</item>
+          <item>three</item>
+        </one-of>
+        <tag>out='StartServices';</tag>
+      </item>
+
+      <item>
+        <one-of>
+          <item>representative</item>
+          <item>customer care</item>
+          <item>agent</item>
+        </one-of>
+        <tag>out='Agent';</tag>
+      </item>
+    </one-of>
+
+    <ruleref special="GARBAGE"></ruleref>
+  </rule>
+</grammar>
