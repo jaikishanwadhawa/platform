@@ -30,6 +30,9 @@
           <item>Amount</item>
           <item>Due Amount</item>
           <item>One</item>
+          <item>Hey Bill</item>
+          <item>Hey Belle</item>
+<!--
           <item>Paybill</item>   
           <item>Paypal</item>            
           <item>Hey Bill</item>
@@ -63,8 +66,9 @@
           <item>Khaytell</item>                   
           <item>Kay Hill</item>
           <item>Thank God</item>
+-->          
         </one-of>
-        <tag>out='PayBill7';</tag>
+        <tag>out='PayBill8';</tag>
       </item>
 
       <item>
