@@ -35,6 +35,10 @@
           <item>Hey Bill</item>
           <item>Heybill</item>
           <item>Hey Belle</item>
+          <item>Hey Tell</item>         
+          <item>Hey Telle</item>           
+          <item>Heytelle</item>         
+          <item>Heytell</item>                     
           <item>Pay Hill</item>
           <item>Kay Bill</item>          
           <item>Kay Pill</item>             
@@ -45,13 +49,19 @@
           <item>Cape Hill</item>
           <item>Pay Pell</item>
           <item>Pay Tell</item>
+          <item>Pay Telle</item>         
+          <item>Paytelle</item>      
+          <item>Paytell</item>                        
           <item>Phay Tell</item>
+          <item>Phay Telle</item>    
+          <item>Phaytelle</item>        
+          <item>Phaytell</item>                     
           <item>Phay Till</item>          
           <item>Kay Tell</item>
           <item>Kay Hill</item>
           <item>Thank God</item>
         </one-of>
-        <tag>out='PayBill5';</tag>
+        <tag>out='PayBill6';</tag>
       </item>
 
       <item>
