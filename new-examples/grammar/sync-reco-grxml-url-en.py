@@ -81,8 +81,8 @@ asr_body = {
             "noInputTimeout": 6000,
             "completeTimeout": 2000,
             "incompleteTimeout" : 5000,
-            "sensitivity" : 0.5,
-            "speedVsAccuracy" : 0.9,
+            "sensitivity" : 0.3,
+            #"speedVsAccuracy" : 0.9,
             "maxAlternatives" : 5,
             "confidenceThreshold" : 0.0001 
             , "languages" : ["en"]			
