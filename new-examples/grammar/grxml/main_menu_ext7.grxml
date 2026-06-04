@@ -40,6 +40,7 @@
           <item>Heytelle</item>         
           <item>Heytell</item>                     
           <item>Pay Hill</item>
+          <item>Pay Pelle</item>
           <item>Kay Bill</item>          
           <item>Kay Pill</item>             
           <item>Kaypill</item>    
@@ -58,10 +59,12 @@
           <item>Phaytell</item>                     
           <item>Phay Till</item>          
           <item>Kay Tell</item>
+          <item>Khay Tell</item>
+          <item>Khaytell</item>                   
           <item>Kay Hill</item>
           <item>Thank God</item>
         </one-of>
-        <tag>out='PayBill6';</tag>
+        <tag>out='PayBill7';</tag>
       </item>
 
       <item>
