@@ -43,8 +43,10 @@
           <item>Kaybill</item>     
           <item>Kaybell</item> 
           <item>Cape Hill</item>
+          <item>Pay Pell</item>
+          <item>Pay Tell</item>
         </one-of>
-        <tag>out='PayBill3';</tag>
+        <tag>out='PayBill4';</tag>
       </item>
 
       <item>
