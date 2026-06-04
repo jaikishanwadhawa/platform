@@ -43,7 +43,7 @@
           <item>Kaybill</item>     
           <item>Kaybell</item> 
         </one-of>
-        <tag>out='PayBill';</tag>
+        <tag>out='PayBill2';</tag>
       </item>
 
       <item>
