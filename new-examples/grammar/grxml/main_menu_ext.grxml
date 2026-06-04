@@ -35,6 +35,8 @@
           <item>Pay Hill</item>
           <item>Kay Bill</item>          
           <item>Kay Pill</item>             
+          <item>KayPall</item>     
+          <item>KayBill</item>     
         </one-of>
         <tag>out='PayBill';</tag>
       </item>

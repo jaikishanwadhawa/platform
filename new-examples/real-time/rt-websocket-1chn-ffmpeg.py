@@ -31,8 +31,8 @@ receivingWSProtocol = "wss"
 #receivingWSProtocol = "ws"
 
 #acousticModelRealTime = "VoiceGain-rho-en-us"
-#acousticModelRealTime = "VoiceGain-rho"
-acousticModelRealTime = "VoiceGain-kappa"
+acousticModelRealTime = "VoiceGain-rho"
+#acousticModelRealTime = "VoiceGain-kappa"
 
 
 headers = {"Authorization":JWT}
@@ -70,7 +70,7 @@ body = {
             "acousticModelRealTime" : acousticModelRealTime,
             "noInputTimeout": 59999,
             "incompleteTimeout": 3599999,
-            "sensitivity": 0.95
+            "sensitivity": 0.3
             # ,"hints": [
             #     "Starburst:10",
             #     "Mars_Wrigley:10",
