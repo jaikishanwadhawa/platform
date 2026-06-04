@@ -30,13 +30,18 @@
           <item>Amount</item>
           <item>Due Amount</item>
           <item>One</item>
+          <item>Paybill</item>   
+          <item>Paypal</item>            
           <item>Hey Bill</item>
+          <item>Heybill</item>
           <item>Hey Belle</item>
           <item>Pay Hill</item>
           <item>Kay Bill</item>          
           <item>Kay Pill</item>             
-          <item>KayPall</item>     
-          <item>KayBill</item>     
+          <item>Kaypill</item>    
+          <item>Kaypall</item>     
+          <item>Kaybill</item>     
+          <item>Kaybell</item> 
         </one-of>
         <tag>out='PayBill';</tag>
       </item>
