@@ -58,26 +58,8 @@ asr_body = {
             "acousticModelNonRealTime" : acousticModelRealTime,
             "grammars" : [
                 {
-                    "type": "GRXML",
-                    "name" : "yes-no",
-                    "fromUrl":{
-                        # "url" : "https://s3.us-east-2.amazonaws.com/files.public.voicegain.ai/zip_code_no_refs.grxml"
-                        # "url" : "https://grammar.host/zip_code_no_refs.grxml"
-                        # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/examples/grammars/grxml/member_id_type_1.grxml"
-                        # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/examples/grammars/grxml/taxonomy.grxml"
-                        # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/zip_code_no_refs3.grxml"
-                        # "url" : "https://support.voicegain.ai/hc/en-us/article_attachments/360062920832"
-                        # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/person_dir_large.grxml"
-                        # "url" : "https://raw.githubusercontent.com/TrevorIPI/special-octo-guide/refs/heads/main/transcribe2.grxml"
-                        # "url" : "https://s3.us-east-2.amazonaws.com/files.public.voicegain.ai/mystery.grxml"
-                        # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/emergency-1.grxml"
-                        # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/help.grxml"
-                        # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/spanish-w-base-B.grxml"
-                       # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/yes-no-en-token.grxml"
-                       # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/main_menu.grxml"
-                       # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/en-es-GARB-selector-example.grxml"
-                       "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/new-or-existing.grxml"
-                    }
+                    "type": "BUILT-IN",
+                    "name" : "boolean"
                 }
             ],
             "noInputTimeout": 6000,

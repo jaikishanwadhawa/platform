@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar
+    mode="voice"
+    root="voiceInlineGrammar"
+    xml:lang="en"
+    version="1.0"
+    xmlns="http://www.w3.org/2001/06/grammar">
+
+    <rule id="voiceInlineGrammar" scope="public">
+        <ruleref special="GARBAGE"/>
+
+        <one-of>
+            <item>
+                <one-of>
+                    <item>new</item>
+                    <item>New Customer</item>
+                </one-of>
+                <tag>out='NewCustomer';</tag>
+            </item>
+
+            <item>
+                <one-of>
+                    <item>existing</item>
+                    <item>exist</item>
+                    <item>Existing Customer</item>
+                </one-of>
+                <tag>out='ExistingCustomer';</tag>
+            </item>
+        </one-of>
+
+        <ruleref special="GARBAGE"/>
+    </rule>
+</grammar>
