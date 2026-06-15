@@ -76,7 +76,7 @@ asr_body = {
                        # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/yes-no-en-token.grxml"
                        # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/main_menu.grxml"
                        # "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/en-es-GARB-selector-example.grxml"
-                       "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/new-or-existing.grxml"
+                       "url" : "https://raw.githubusercontent.com/voicegain/platform/master/new-examples/grammar/grxml/new_or_existing.grxml"
                     }
                 }
             ],

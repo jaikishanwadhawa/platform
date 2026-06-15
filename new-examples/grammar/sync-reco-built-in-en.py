@@ -59,7 +59,9 @@ asr_body = {
             "grammars" : [
                 {
                     "type": "BUILT-IN",
-                    "name" : "boolean"
+                    #"name" : "boolean"
+                    "name" : "digit",
+                    "parameters" : {"minlength" : 10, "maxlength" : 12   }
                 }
             ],
             "noInputTimeout": 6000,
